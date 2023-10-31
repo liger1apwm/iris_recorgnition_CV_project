@@ -1,11 +1,17 @@
-import cv2 
-import numpy as np 
+# import cv2 
+# import numpy as np 
 
-theta = 0.001 
+s1 = "hello"
+s2 = "world"
 
-x = np.array([-3.3, 0.1, -1.1, 2.7, 2.0,-0.4])
-y = np.array([-2.6,-0.2,-1.5,1.5,1.9,-0.3])
+s1 = s1[::-1]
+s2= s2[::-1]
+s = ""
+i = 0 
+while i < len(s1):
 
-sum = sum(x**2+ 2*theta*x*y+y**2)
+    s = s + s1[i]
+    s = s + s2[i]
+    i+=1
 
-print(sum)
+print(s)
