@@ -50,7 +50,43 @@ def main():
     
     
 
-   
+ ## LYLYBELL TESTING 
+
+def process_dataset(input_directory, output_directory):
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Using os.walk() to recursively fetch image files from subdirectories
+    image_files = []
+    for dirpath, dirnames, filenames in os.walk(input_directory):
+        for filename in [f for f in filenames if f.lower().endswith(('.bmp'))]:
+            image_files.append(os.path.join(dirpath, filename))
+
+    boundaries = []
+    centers = []
+
+    # Localize iris in each image
+    for image_file in image_files:
+        image = cv2.imread(image_file)
+        
+        boundary, center = IrisLocalization([image])
+        boundaries.extend(boundary)
+        centers.extend(center)
+
+    # Normalize each localized iris
+    normalized_images = IrisNormalization(boundaries, centers)
+
+    # Save each normalized image to the output directory
+    for idx, normalized_img in enumerate(normalized_images):
+        output_path = os.path.join(output_directory, f"normalized_{idx}.png")
+        cv2.imwrite(output_path, normalized_img)
+
+# Example usage:
+input_dir = "CASIA Iris Image Database (version 1.0)"
+output_dir = "iris_normalized_imgs"
+process_dataset(input_dir, output_dir)
+
+## END 
 
 if __name__ == "__main__":
   main()
