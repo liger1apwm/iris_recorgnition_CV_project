@@ -24,6 +24,8 @@ def IrisLocalization(images):
         # Step 4: Fine-tune pupil center estimate within a smaller region
         local_region_x = smoothed[tentative_center_x-60:tentative_center_x+60]
         local_region_y = smoothed[tentative_center_y-60:tentative_center_y+60]
+
+
         h_proj_local = np.mean(local_region_y, 0)
         v_proj_local = np.mean(local_region_x, 0)
         refined_center_x = h_proj_local.argmin()
@@ -46,8 +48,8 @@ def IrisLocalization(images):
         radius = int(closest_circle[2])
 
         # Step 7: Draw detected boundaries
-        cv2.circle(gray_image, (final_center_x, final_center_y), radius, (255, 0, 0), 3)
-        cv2.circle(gray_image, (final_center_x, final_center_y), radius + 53, (255, 0, 0), 3)
+        cv2.circle(gray_image, (final_center_x, final_center_y), radius, (255, 0, 0), 1)
+        cv2.circle(gray_image, (final_center_x, final_center_y), radius + 53, (255, 0, 0), 1)
 
         boundaries.append(gray_image)
         iris_centers.append([final_center_x, final_center_y, radius])

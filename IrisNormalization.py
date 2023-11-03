@@ -8,7 +8,7 @@ def IrisNormalization(boundaries, centers):
     for boundary_img, center in zip(boundaries, centers):
         # Step 1: Determine the Center and Radius
         center_x, center_y, radius_pupil = center
-
+        
         # the width of space between inner and outer boundary (iris width)
         iris_radius = 53
 
