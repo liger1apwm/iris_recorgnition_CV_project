@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import math
 from scipy.spatial import distance
+import os
 
 def IrisLocalization(images):
 
@@ -9,6 +10,7 @@ def IrisLocalization(images):
     boundaries = [] 
     iris_centers = []
 
+    i = 0
     for image in images:
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         
@@ -48,10 +50,17 @@ def IrisLocalization(images):
         radius = int(closest_circle[2])
 
         # Step 7: Draw detected boundaries
-        cv2.circle(gray_image, (final_center_x, final_center_y), radius, (255, 0, 0), 1)
-        cv2.circle(gray_image, (final_center_x, final_center_y), radius + 53, (255, 0, 0), 1)
+        cv2.circle(gray_image, (final_center_x, final_center_y), radius, (255, 255, 0), 1)
+        cv2.circle(gray_image, (final_center_x, final_center_y), radius + 53, (255, 255, 0), 1)
 
+        i +=1
+        output_directory = "./localised_images/"
+
+        output_path = os.path.join(output_directory, f"localised_{i}.png")
+        cv2.imwrite(output_path, gray_image)
+        
         boundaries.append(gray_image)
         iris_centers.append([final_center_x, final_center_y, radius])
 
     return boundaries, iris_centers
+

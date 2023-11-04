@@ -2,8 +2,7 @@
 
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 import numpy as np
-
-#fea_vec, label
+import statistics
 
 #[[arr1], [arr2], [arr3], ..,] 
 # labels?
@@ -18,6 +17,20 @@ def dimension_reduction(feature_train,feature_test, labels, k):
     feature_vector_test_lda = lda.transform(feature_test) 
     return feature_vector_train_lda, feature_vector_test_lda
 
+
+def match_class(feature_vec_train, feature_vec_test, metric):
+
+    if metric == 'l1':
+        d = calculate_L1_distance(feature_vec_train, feature_vec_test)
+    elif metric == 'l2':
+        d = calculate_L2_distance(feature_vec_train, feature_vec_test)
+    elif metric == 'cosine':
+        d = calculate_cosine_distance(feature_vec_train, feature_vec_test)
+    else:
+        raise ValueError("Invalid distance_metric. Supported values are 'L1', 'L2', and 'Cosine'.")
+
+    return d 
+
 def calculate_L1_distance(feature_vec_train, feature_vec_test):
     
     feature_vec_train = np.array(feature_vec_train)
@@ -27,9 +40,10 @@ def calculate_L1_distance(feature_vec_train, feature_vec_test):
     d1= [] 
 
     for i in feature_vec_test:
-        d1.append(np.argmin(np.abs(np.sum(feature_vec_train - i, axis =1))))
+        d1.append(np.argmin(np.sum(np.abs(feature_vec_train - i), axis =1)))
 
     return d1
+
 
 def calculate_L2_distance(feature_vec_train, feature_vec_test):    
     
@@ -41,7 +55,6 @@ def calculate_L2_distance(feature_vec_train, feature_vec_test):
 
     for i in feature_vec_test:
         d2.append(np.argmin(np.sum(np.square(feature_vec_train - i), axis =1)))
-        #print(d2)
 
     return d2
 
@@ -62,27 +75,28 @@ def calculate_cosine_distance(feature_vec_train, feature_vec_test):
             cosine = np.divide(numerator, (A*B))
             cosine_distance_array.append(cosine)
         d3.append(np.argmin(cosine_distance_array))
-
-        #print(d3)
-
+    
     return d3
 
-def max_class(index_array):
+#verify with sklearn library
+
+from sklearn.neighbors import NearestCentroid
+def nearestCentroid(feature_vec_train, feature_vec_test, labels, metric):
+
+    clf = NearestCentroid(metric)
+    clf.fit(feature_vec_train, labels)    
+
+    d = []
+    d = clf.predict(feature_vec_test)
+
+    return d
+
+def max_class(index_array, images_per_test_class):
     max_label=[]
 
     i = 0
     while i < len(index_array):
-        j= i+4
-        max_label.append(np.max(index_array[i:j]))
-        i= j 
-    
-    assert len(max_label) == len(index_array)/4
+        max_label.append(statistics.mode(index_array[i:i+images_per_test_class]))
+        i= i+images_per_test_class
 
     return max_label
-
-#feature_vec_train = [[1,2,3,4,5], [1,2,4,6,6], [1,2,4,5,6]]
-#feature_vec_test = [[1,2,3,4,4]]
-
-#calculate_L1_distance(feature_vec_train,feature_vec_test )
-#calculate_L2_distance(feature_vec_train,feature_vec_test )
-# calculate_cosine_distance(feature_vec_train,feature_vec_test )
