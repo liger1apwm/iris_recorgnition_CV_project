@@ -27,7 +27,7 @@ def calculate_L1_distance(feature_vec_train, feature_vec_test):
     d1= [] 
 
     for i in feature_vec_test:
-        d1.append(np.argmin(np.abs(np.sum(feature_vec_train - i, axis =1))))
+        d1.append(np.argmin(np.sum(np.abs(feature_vec_train - i), axis =1)))
 
     return d1
 

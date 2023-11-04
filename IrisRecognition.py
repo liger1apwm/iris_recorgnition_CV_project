@@ -179,7 +179,7 @@ def main():
     crr_d3 = []
     dims = []
 
-    for i in range(20,100, 20):
+    for i in range(20,160, 20):
         images_features_dr_train= IrisMatching.dimension_reduction(images_features_train, images_features_test, train_labels, k = i)[0]
         images_features_dr_test= IrisMatching.dimension_reduction(images_features_train, images_features_test, train_labels, k = i)[1]
 
