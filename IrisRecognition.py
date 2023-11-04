@@ -1,9 +1,15 @@
+import cv2
+import os
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
 import IrisEnhancement
 import IrisFeatureExtraction
 import IrisLocalization
 import IrisNormalization
-import cv2
-import os
+import IrisMatching
+import IrisPerformanceEvaluation
 
 def visualize_image(image,title):
     cv2.imshow(title, image)
@@ -91,7 +97,7 @@ def main():
         feature_vec = IrisFeatureExtraction.feature_extraction(enhanced_image_crop,crop_amount)
         images_features_train.append(feature_vec)
 
-    print("Amount of features vec on image features train array is: ",len(images_features_train))
+    print("Number of features vec on image features train array is: ",len(images_features_train))
 
 
     #PORTION TO GET ALL FEATURES FOR THE TEST DATA
@@ -155,12 +161,83 @@ def main():
 
         feature_vec = IrisFeatureExtraction.feature_extraction(enhanced_image_crop,crop_amount)
         images_features_test.append(feature_vec)
+        #print(images_features_test[0])
 
-    print("Amount of features vec on image features test array is: ",len(images_features_test))
-
-
+    print("Number of features vec on image features test array is: ",len(images_features_test))
 
     #SIMRAN TESTING
+
+    train_labels = np.repeat(np.arange(1,109), 3)
+    index = np.arange(1,len(images_features_train)+1)
+    data = {'train_labels': train_labels, 'index': index}
+    train_label_df = pd.DataFrame(data)
+
+    assert len(train_labels) == len(images_features_train)
+
+    crr_d1 = []
+    crr_d2 = [] 
+    crr_d3 = []
+    dims = []
+
+    for i in range(20,100, 20):
+        images_features_dr_train= IrisMatching.dimension_reduction(images_features_train, images_features_test, train_labels, k = i)[0]
+        images_features_dr_test= IrisMatching.dimension_reduction(images_features_train, images_features_test, train_labels, k = i)[1]
+
+        #calculating distance of one vector test with all train vectors and append all test results 
+        #output is indices
+        d1 = IrisMatching.calculate_L1_distance(images_features_dr_train,images_features_dr_test )
+        d2 = IrisMatching.calculate_L2_distance(images_features_dr_train,images_features_dr_test )
+        d3 = IrisMatching.calculate_cosine_distance(images_features_dr_train,images_features_dr_test )
+
+
+        d1_df = pd.DataFrame(d1,columns =["index"])
+        d1_df = d1_df.merge(train_label_df, on = "index", how="left")
+        d1 = d1_df["train_labels"]
+
+        d2_df = pd.DataFrame(d2,columns =["index"])
+        d2_df = d2_df.merge(train_label_df, on = "index",  how="left")
+        d2 = d2_df["train_labels"]
+
+        d3_df = pd.DataFrame(d3,columns =["index"])
+        d3_df = d3_df.merge(train_label_df, on = "index",  how="left")
+        d3 = d3_df["train_labels"]
+
+        #converting maximum of 4 labels associated with each test iris to one class
+        d1 = IrisMatching.max_class(d1) #matched class for test vector 
+        d2 = IrisMatching.max_class(d2)
+        d3 = IrisMatching.max_class(d3)
+
+        assert len(d1) == 108
+        assert len(d2) == 108
+        assert len(d3) == 108
+
+        test_labels = np.arange(1,109)
+        #print(d1)
+
+        #correct recognition rate 
+        #print(IrisPerformanceEvaluation.CRR(test_labels,d1))
+        dims.append(i)
+        crr_d1.append(IrisPerformanceEvaluation.CRR(test_labels,d1))
+        crr_d2.append(IrisPerformanceEvaluation.CRR(test_labels,d2))
+        crr_d3.append(IrisPerformanceEvaluation.CRR(test_labels,d3))
+    
+    crr_data = {'dims':dims,'crr_d1':crr_d1,'crr_d2':crr_d2,'crr_d3':crr_d3}
+    crr_df = pd.DataFrame(crr_data)
+    print(crr_df)
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
 
 
 
