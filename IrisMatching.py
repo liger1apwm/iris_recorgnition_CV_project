@@ -60,24 +60,41 @@ def calculate_L2_distance(feature_vec_train, feature_vec_test):
     return d2
 
 def calculate_cosine_distance(feature_vec_train, feature_vec_test):    
-    
     feature_vec_train = np.array(feature_vec_train)
     feature_vec_test = np.array(feature_vec_test)
 
     #index of min distance for each test vector
     d3= [] 
     
-    cosine_distance_array = []
-    for i in feature_vec_test:
-        A = np.sqrt(np.sum(np.square(i)))
-        for m,n in enumerate(feature_vec_train):
-            B = np.sqrt(np.sum(np.square(n)))
-            numerator = np.sum(np.multiply(i, n))
-            cosine = np.divide(numerator, (A*B))
-            cosine_distance_array.append(cosine)
-        d3.append(np.argmin(cosine_distance_array))
     
+    for idx_test,test_vec in enumerate(feature_vec_test):
+        #simran code
+        # A = np.sqrt(np.sum(np.square(i)))
+        # for m,n in enumerate(feature_vec_train):
+        #     B = np.sqrt(np.sum(np.square(n)))
+        #     numerator = np.sum(np.multiply(i, n))
+        #     cosine = np.divide(numerator, (A*B))
+        #     cosine_distance_array.append(cosine)
+        # d3.append(np.argmin(cosine_distance_array))
+
+        #print(d3)
+        cosine_distance_array = []
+
+        for idx,train_vector in enumerate(feature_vec_train):
+            # print("working on index: ",idx)
+            numerator = np.dot(test_vec.T,train_vector)
+            # print("numerator at index : ",idx ," is : ",numerator)
+            denominator = np.dot(np.linalg.norm(test_vec),np.linalg.norm(train_vector))
+            # print("denominator at index : ",idx ," is : ",denominator)
+
+            d3_unit = 1 - (numerator/denominator)
+            # print("d3_unit at index : ",idx ," is : ",d3_unit)
+            cosine_distance_array.append(d3_unit)
+
+        # print("arg min at index test : ",idx_test ," is : ",np.argmin(cosine_distance_array))
+        d3.append(np.argmin(cosine_distance_array))
     return d3
+
 
 #verify with sklearn library
 

@@ -3,6 +3,8 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings('ignore')
 
 import IrisEnhancement
 import IrisFeatureExtraction
@@ -13,9 +15,7 @@ import IrisPerformanceEvaluation
 import pickle
 import statistics
 
-number_of_classes = 108
-images_per_train_class  = 3
-images_per_test_class = 4
+
 
 def visualize_image(image,title):
     cv2.imshow(title, image)
@@ -179,10 +179,15 @@ def main():
 
 
     #SIMRAN TESTING
+
+    number_of_classes = 108
+    images_per_train_class  = 3
+    images_per_test_class = 4
+
     crr_d1 = []
     crr_d2 = [] 
     crr_d3 = []
-    crr_d4 = [] #delete; this is just to test against sklearn
+    # crr_d4 = [] #delete; this is just to test against sklearn
     dims = []
 
     train_labels = np.repeat(np.arange(1,number_of_classes+1),images_per_train_class)
@@ -193,33 +198,37 @@ def main():
 
     assert len(train_labels) == len(images_features_train)
 
-    for i in range(20,100, 20):
+    for i in range(20,110, 10):
         images_features_dr_train, images_features_dr_test= IrisMatching.dimension_reduction(images_features_train, images_features_test, train_labels, k = i)
 
         #calculating distance of one vector test with all train vectors and append all test results 
         #output is indices
-        d1 = IrisMatching.match_class(images_features_dr_train,images_features_dr_test, metric = 'l1' )
-        d2 = IrisMatching.match_class(images_features_dr_train,images_features_dr_test, metric = 'l2'  )
-        d3 = IrisMatching.match_class(images_features_dr_train,images_features_dr_test , metric = 'cosine' )
-        d4 = IrisMatching.nearestCentroid(images_features_dr_train,images_features_dr_test ,train_labels, metric = 'l1' )
+        # d1 = IrisMatching.match_class(images_features_dr_train,images_features_dr_test, metric = 'l1' )
+        # d2 = IrisMatching.match_class(images_features_dr_train,images_features_dr_test, metric = 'l2'  )
+        # d3 = IrisMatching.match_class(images_features_dr_train,images_features_dr_test , metric = 'cosine' )
+        # d4 = IrisMatching.nearestCentroid(images_features_dr_train,images_features_dr_test ,train_labels, metric = 'cosine')
 
-        d1_df = pd.DataFrame(d1,columns =["index"])
-        d1_df = d1_df.merge(train_label_df, on = "index", how="left")
-        d1 = d1_df["train_labels"]
+        d1 = IrisMatching.nearestCentroid(images_features_dr_train,images_features_dr_test ,train_labels, metric = 'l1')
+        d2 = IrisMatching.nearestCentroid(images_features_dr_train,images_features_dr_test ,train_labels, metric = 'l2')
+        d3 = IrisMatching.nearestCentroid(images_features_dr_train,images_features_dr_test ,train_labels, metric = 'cosine')
 
-        d2_df = pd.DataFrame(d2,columns =["index"])
-        d2_df = d2_df.merge(train_label_df, on = "index",  how="left")
-        d2 = d2_df["train_labels"]
+        # d1_df = pd.DataFrame(d1,columns =["index"])
+        # d1_df = d1_df.merge(train_label_df, on = "index", how="left")
+        # d1 = d1_df["train_labels"]
 
-        d3_df = pd.DataFrame(d3,columns =["index"])
-        d3_df = d3_df.merge(train_label_df, on = "index",  how="left")
-        d3 = d3_df["train_labels"]
+        # d2_df = pd.DataFrame(d2,columns =["index"])
+        # d2_df = d2_df.merge(train_label_df, on = "index",  how="left")
+        # d2 = d2_df["train_labels"]
+
+        # d3_df = pd.DataFrame(d3,columns =["index"])
+        # d3_df = d3_df.merge(train_label_df, on = "index",  how="left")
+        # d3 = d3_df["train_labels"]
 
         #converting maximum of 4 labels associated with each test iris to one class
         d1 = IrisMatching.max_class(d1,images_per_test_class) #matched class for test vector 
         d2 = IrisMatching.max_class(d2, images_per_test_class)
         d3 = IrisMatching.max_class(d3, images_per_test_class)
-        d4 = IrisMatching.max_class(d4, images_per_test_class)
+        # d4 = IrisMatching.max_class(d4, images_per_test_class)
 
         assert len(d1) == 108
         assert len(d2) == 108
@@ -233,12 +242,12 @@ def main():
         crr_d1.append(IrisPerformanceEvaluation.CRR(test_true_labels,d1))
         crr_d2.append(IrisPerformanceEvaluation.CRR(test_true_labels,d2))
         crr_d3.append(IrisPerformanceEvaluation.CRR(test_true_labels,d3))
-        crr_d4.append(IrisPerformanceEvaluation.CRR(test_true_labels,d4))
-    
-    crr_data = {'dims':dims,'crr_d1':crr_d1,'crr_d2':crr_d2,'crr_d3':crr_d3, 'crr_d4':crr_d4}
+        # crr_d4.append(IrisPerformanceEvaluation.CRR(test_true_labels,d4))
+
+    # crr_data = {'dims':dims,'crr_d1':crr_d1,'crr_d2':crr_d2,'crr_d3':crr_d3, 'crr_d4':crr_d4}
+    crr_data = {'dims':dims,'crr_d1':crr_d1,'crr_d2':crr_d2,'crr_d3':crr_d3}
     crr_df = pd.DataFrame(crr_data)
     print(crr_df)
-
 
 
 
