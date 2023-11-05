@@ -171,11 +171,11 @@ def main():
 
     print("Number of features vec on image features test array is: ",len(images_features_test))
 
-    import pickle
-    with open('images_features_train.pkl', 'wb') as file:
-        pickle.dump(images_features_train, file)
-    with open('images_features_test.pkl', 'wb') as file:
-        pickle.dump(images_features_test, file)
+    # import pickle
+    # with open('images_features_train.pkl', 'wb') as file:
+    #     pickle.dump(images_features_train, file)
+    # with open('images_features_test.pkl', 'wb') as file:
+    #     pickle.dump(images_features_test, file)
 
 
     #SIMRAN TESTING

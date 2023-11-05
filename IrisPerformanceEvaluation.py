@@ -13,7 +13,7 @@ def CRR(true, pred):
 
     CRR = np.round(np.divide(correct, n)*100,2)
 
-    return correct 
+    return CRR 
     
 
 
