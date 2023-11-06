@@ -16,7 +16,7 @@ def IrisNormalization(boundaries, centers):
 
         # Define the number of samples around the full circle of the iris. This determines the resolution of the angular dimension
         nsamples = 360
-        # Create an array of angles from 0 to 2*pi, representing the full circle in radians
+        # Create an array of angles from 0 to 2*pi (representing the full circle in radians)
         samples = np.linspace(0, 2*np.pi, nsamples)[:-1]
         # Initialize an array to hold the polar coordinate representation of the iris
         polar = np.zeros((iris_radius, nsamples))
