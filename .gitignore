@@ -1,8 +1,15 @@
+########################
+# Data  files & codes #
+########################
 
 test.py
 project_eric_testing.ipynb
 normalized_images_test
 normalized_images_train
 localised_images
-
-
+simran_fmr_test.py
+images_features_test.pkl
+images_features_train.pkl
+test.ipynb
+output_image_filter1.jpg
+output_image_filter2.jpg

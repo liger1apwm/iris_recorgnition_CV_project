@@ -173,83 +173,88 @@ def main():
 
     print("Number of features vec on image features test array is: ",len(images_features_test))
 
-    # import pickle
-    # with open('images_features_train.pkl', 'wb') as file:
-    #     pickle.dump(images_features_train, file)
-    # with open('images_features_test.pkl', 'wb') as file:
-    #     pickle.dump(images_features_test, file)
+    #Simran Testing
 
-
-    #SIMRAN TESTING
-
+    #setting and initializing the parameters
     number_of_classes = 108
     images_per_train_class  = 3
     images_per_test_class = 4
 
+    #for correct recognition 
     crr_d1 = []
     crr_d2 = [] 
     crr_d3 = []
-    # crr_d4 = [] #delete; this is just to test against sklearn
     dims = []
 
+    #for false match calculation
+    thresholds = [0.446, 0.472, 0.502]
+    fmr = []
+    fnmr = []
+
+    #creating a table of train labels and indices; an array for test lables
     train_labels = np.repeat(np.arange(1,number_of_classes+1),images_per_train_class)
     test_labels = np.repeat(np.arange(1,number_of_classes+1),images_per_test_class) 
     index = np.arange(1,len(images_features_train)+1)
     data = {'train_labels': train_labels, 'index': index}
     train_label_df = pd.DataFrame(data)
 
+    #verification step
     assert len(train_labels) == len(images_features_train)
 
-    for i in range(20,110, 10):
-        images_features_dr_train, images_features_dr_test= IrisMatching.dimension_reduction(images_features_train, images_features_test, train_labels, k = i)
+    #calculate correct recognition rate and false match rate table for every dimension 
+    for i in range(20,110,10):
 
-        #calculating distance of one vector test with all train vectors and append all test results 
-        #output is indices
-        # d1 = IrisMatching.match_class(images_features_dr_train,images_features_dr_test, metric = 'l1' )
-        # d2 = IrisMatching.match_class(images_features_dr_train,images_features_dr_test, metric = 'l2'  )
-        # d3 = IrisMatching.match_class(images_features_dr_train,images_features_dr_test , metric = 'cosine' )
-        # d4 = IrisMatching.nearestCentroid(images_features_dr_train,images_features_dr_test ,train_labels, metric = 'cosine')
+        #using fisher linear discriminant, reducing the dimensions at k = i
+        images_features_dr_train, images_features_dr_test = IrisMatching.dimension_reduction(images_features_train, images_features_test, train_labels, k = i)
 
-        d1 = IrisMatching.nearestCentroid(images_features_dr_train,images_features_dr_test ,train_labels, metric = 'l1')
-        d2 = IrisMatching.nearestCentroid(images_features_dr_train,images_features_dr_test ,train_labels, metric = 'l2')
-        d3 = IrisMatching.nearestCentroid(images_features_dr_train,images_features_dr_test ,train_labels, metric = 'cosine')
+        #estimating class label using nearest centroid method for each distance metric ('l1','l2','cosine')
+        #Note: Both the approaches were attempted, nearest centroid produced better results than one-on-one distance calc.
+        d1 = IrisMatching.nearestCentroid(images_features_dr_train,images_features_dr_test ,train_labels, metric = 'l1', score = False)
+        d2 = IrisMatching.nearestCentroid(images_features_dr_train,images_features_dr_test ,train_labels, metric = 'l2', score = False )
+        d3 = IrisMatching.nearestCentroid(images_features_dr_train,images_features_dr_test ,train_labels, metric = 'cosine', score =  False)
 
-        # d1_df = pd.DataFrame(d1,columns =["index"])
-        # d1_df = d1_df.merge(train_label_df, on = "index", how="left")
-        # d1 = d1_df["train_labels"]
+        #verification step
+        assert len(d1) == number_of_classes * images_per_test_class 
+        assert len(d2) == number_of_classes * images_per_test_class 
+        assert len(d3) == number_of_classes * images_per_test_class 
 
-        # d2_df = pd.DataFrame(d2,columns =["index"])
-        # d2_df = d2_df.merge(train_label_df, on = "index",  how="left")
-        # d2 = d2_df["train_labels"]
-
-        # d3_df = pd.DataFrame(d3,columns =["index"])
-        # d3_df = d3_df.merge(train_label_df, on = "index",  how="left")
-        # d3 = d3_df["train_labels"]
-
-        #converting maximum of 4 labels associated with each test iris to one class
-        d1 = IrisMatching.max_class(d1,images_per_test_class) #matched class for test vector 
-        d2 = IrisMatching.max_class(d2, images_per_test_class)
-        d3 = IrisMatching.max_class(d3, images_per_test_class)
-        # d4 = IrisMatching.max_class(d4, images_per_test_class)
-
-        assert len(d1) == 108
-        assert len(d2) == 108
-        assert len(d3) == 108
-
-        test_true_labels = np.arange(1,number_of_classes+1)
-
-        #correct recognition rate 
-        #print(IrisPerformanceEvaluation.CRR(test_labels,d1))
+        #appending the correct recognition rate for each dimension as a list
         dims.append(i)
-        crr_d1.append(IrisPerformanceEvaluation.CRR(test_true_labels,d1))
-        crr_d2.append(IrisPerformanceEvaluation.CRR(test_true_labels,d2))
-        crr_d3.append(IrisPerformanceEvaluation.CRR(test_true_labels,d3))
-        # crr_d4.append(IrisPerformanceEvaluation.CRR(test_true_labels,d4))
+        crr_d1.append(IrisPerformanceEvaluation.CRR(test_labels,d1))
+        crr_d2.append(IrisPerformanceEvaluation.CRR(test_labels,d2))
+        crr_d3.append(IrisPerformanceEvaluation.CRR(test_labels,d3))
 
-    # crr_data = {'dims':dims,'crr_d1':crr_d1,'crr_d2':crr_d2,'crr_d3':crr_d3, 'crr_d4':crr_d4}
+        #calculating similarity score for cosine distance
+        similarity_score = IrisMatching.nearestCentroid(images_features_dr_train,images_features_dr_test ,train_labels, metric = 'cosine', score =  True)
+
+        #calculating false match and non-match rate for each threshold
+        df1 = IrisPerformanceEvaluation.false_rate(similarity_score, thresholds[0], test_labels, d3)
+        df2 = IrisPerformanceEvaluation.false_rate(similarity_score, thresholds[1], test_labels, d3)
+        df3 = IrisPerformanceEvaluation.false_rate(similarity_score, thresholds[2], test_labels, d3)
+        false_rate_table = pd.concat([df1,df2,df3])
+        print(false_rate_table)
+
+    #storing correct recognition rate results in crr_df dataframe
     crr_data = {'dims':dims,'crr_d1':crr_d1,'crr_d2':crr_d2,'crr_d3':crr_d3}
     crr_df = pd.DataFrame(crr_data)
     print(crr_df)
+
+    #Generates a plot for correct recognition rate
+    IrisPerformanceEvaluation.make_plot(crr_df)
+
+if __name__ == "__main__":
+  main()
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -347,5 +352,5 @@ def main():
 
 # # ## END 
 
-if __name__ == "__main__":
-  main()
+# if __name__ == "__main__":
+#   main()
