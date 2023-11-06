@@ -39,7 +39,7 @@ def IrisLocalization(images):
         edges = cv2.Canny(masked_img, 100, 220)
         
         # Step 6: Apply Hough Transform to detect circles
-        potential_circles = cv2.HoughCircles(edges, cv2.HOUGH_GRADIENT, 10, 100)
+        potential_circles = cv2.HoughCircles(edges, cv2.HOUGH_GRADIENT, 5, 100)
         
         center_estimate = (refined_center_x, refined_center_y)
 
@@ -53,10 +53,15 @@ def IrisLocalization(images):
         cv2.circle(gray_image, (final_center_x, final_center_y), radius, (255, 255, 0), 1)
         cv2.circle(gray_image, (final_center_x, final_center_y), radius + 53, (255, 255, 0), 1)
 
-        i +=1
-        output_directory = "./localised_images/"
 
-        output_path = os.path.join(output_directory, f"localised_{i}.png")
+
+        i +=1
+        output_directory = "./localized_images/"
+
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
+
+        output_path = os.path.join(output_directory, f"localized_{i}.png")
         cv2.imwrite(output_path, gray_image)
         
         boundaries.append(gray_image)

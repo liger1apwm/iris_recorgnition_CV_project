@@ -32,6 +32,8 @@ def main():
     database_dir = "./CASIA Iris Image Database (version 1.0)/"
 
     #ERIC TESTING CODE
+
+    #Arrays to gather the featuress, images paths, and collection of images for the train and testing dataset
     images_features_train = []
     images_path_train = []
     images_train = []
