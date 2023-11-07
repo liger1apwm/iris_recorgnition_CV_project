@@ -12,8 +12,7 @@ import IrisLocalization
 import IrisNormalization
 import IrisMatching
 import IrisPerformanceEvaluation
-import pickle
-import statistics
+
 
 
 
@@ -31,8 +30,9 @@ def main():
     
     database_dir = "./CASIA Iris Image Database (version 1.0)/"
 
-    #ERIC TESTING CODE
+    print("PROCESS STARTED PLEASE WAIT...\n")
 
+    
     #Arrays to gather the featuress, images paths, and collection of images for the train and testing dataset
     images_features_train = []
     images_path_train = []
@@ -42,7 +42,7 @@ def main():
     images_path_test = []
     images_test = []
 
-    #PORTION TO GET ALL FEATURES FOR THE TRAIN DATA
+    #For loop to gather all training images in the folder structured with ext .bmp
     for i in range(1,109,1): 
         
         current_img_path = database_dir + f"{i:03d}" + "/1/"
@@ -54,18 +54,16 @@ def main():
             if filename.lower().endswith(('.bmp')):
                 path = os.path.join(current_img_path,filename)
                 images_path_train.append(path)
+
+                #Append each image in the image train array
                 images_train.append(cv2.imread(path))
-                # print(os.path.join(current_img_path,filename))
-   
+               
+    
+    #Arrays to get the image with boundries and the centers of the pupil
     boundaries = []
     centers = []
-
-    # # Localize iris in each image
-    # for image_file in images_path_train:
-    #     image = cv2.imread(image_file)
-
-    #     print(image_file)
         
+    #Populating the previous arrays using the Iris localization file
     boundary, center = IrisLocalization.IrisLocalization(images_train)
     boundaries.extend(boundary)
     centers.extend(center)
@@ -73,10 +71,9 @@ def main():
 
     # Normalize each localized iris
     normalized_images = IrisNormalization.IrisNormalization(boundaries, centers)
-    # print("the length of the normalized images is : ",len(normalized_images))
-
-    # print(len(normalized_images))
-
+   
+    # Saving each normalized image locally since when we passed as an array to the next step we 
+    # were getting error on the format. Therefore it was solve by saving the image and reading it again
     output_directory = "./normalized_images_train/"
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
@@ -88,26 +85,36 @@ def main():
         if not os.path.exists(output_path):
             cv2.imwrite(output_path, normalized_img)
 
-        # print(normalized_img.shape)
-        # print(f"index before crash is {idx+1}")
+
+        #Read each image back again
         normalize_image = cv2.imread(output_path)
+
+        #Make the normalize image in gray
         normalize_image_gray = cv2.cvtColor(normalize_image, cv2.COLOR_BGR2GRAY)
+
+        # variable to crop the bottom part
         crop_amount = 48
-        # print(f"image number {idx +1} is ",normalized_img)
+
+        # Enhacement step
         enhanced_image = IrisEnhancement.enhacement(normalize_image_gray)
+
         # (x1, y1) is the top-left corner, (x2, y2) is the bottom-right corner
         x1, y1, x2, y2 = 0, 0, 512, crop_amount
+
         # Crop the specified region
         enhanced_image_crop = enhanced_image[y1:y2, x1:x2]
-        # visualize_image(enhanced_image_crop,'Histogram Equalized')
 
+        #Extract and append the feature vector for the corresponing train image
         feature_vec = IrisFeatureExtraction.feature_extraction(enhanced_image_crop,crop_amount)
         images_features_train.append(feature_vec)
 
-    print("Number of features vec on image features train array is: ",len(images_features_train))
+    # print("Number of features vec on image features train array is: ",len(images_features_train))
 
 
     #PORTION TO GET ALL FEATURES FOR THE TEST DATA
+
+    #This loop is doing the same as the previous loop we did on the train, but this time we are
+    #collecting features for the test data
     for i in range(1,109,1): 
         
         current_img_path = database_dir + f"{i:03d}" + "/2/"
@@ -120,16 +127,10 @@ def main():
                 path = os.path.join(current_img_path,filename)
                 images_path_test.append(path)
                 images_test.append(cv2.imread(path))
-                # print(os.path.join(current_img_path,filename))
+               
    
     boundaries = []
     centers = []
-
-    # # Localize iris in each image
-    # for image_file in images_path_train:
-    #     image = cv2.imread(image_file)
-
-    #     print(image_file)
         
     boundary, center = IrisLocalization.IrisLocalization(images_test)
     boundaries.extend(boundary)
@@ -138,9 +139,7 @@ def main():
 
     # Normalize each localized iris
     normalized_images = IrisNormalization.IrisNormalization(boundaries, centers)
-    # print("the length of the normalized images is : ",len(normalized_images))
 
-    # print(len(normalized_images))
 
     output_directory = "./normalized_images_test/"
     if not os.path.exists(output_directory):
@@ -153,28 +152,29 @@ def main():
         if not os.path.exists(output_path):
             cv2.imwrite(output_path, normalized_img)
 
-        # print(normalized_img.shape)
-        # print(f"index before crash is {idx+1}")
+
         normalize_image = cv2.imread(output_path)
         normalize_image_gray = cv2.cvtColor(normalize_image, cv2.COLOR_BGR2GRAY)
         crop_amount = 48
-        # print(f"image number {idx +1} is ",normalized_img)
+    
         enhanced_image = IrisEnhancement.enhacement(normalize_image_gray)
+
         # (x1, y1) is the top-left corner, (x2, y2) is the bottom-right corner
         x1, y1, x2, y2 = 0, 0, 512, crop_amount
+
         # Crop the specified region
         enhanced_image_crop = enhanced_image[y1:y2, x1:x2]
         # visualize_image(enhanced_image_crop,'Histogram Equalized')
 
+        #Same as before , append the features of the test images in the vectors
         feature_vec = IrisFeatureExtraction.feature_extraction(enhanced_image_crop,crop_amount)
         images_features_test.append(feature_vec)
-        #print(images_features_test[0])
+        
 
 
-    print("Number of features vec on image features test array is: ",len(images_features_test))
+    # print("Number of features vec on image features test array is: ",len(images_features_test))
 
-    #Simran Testing
-
+    
     #setting and initializing the parameters
     number_of_classes = 108
     images_per_train_class  = 3
@@ -187,16 +187,14 @@ def main():
     dims = []
 
     #for false match calculation
-    thresholds = [0.446, 0.472, 0.502]
+    thresholds = [0.400,0.446, 0.472, 0.502,0.600]
     fmr = []
     fnmr = []
 
-    #creating a table of train labels and indices; an array for test lables
+    #Arrays for train and test labels
     train_labels = np.repeat(np.arange(1,number_of_classes+1),images_per_train_class)
     test_labels = np.repeat(np.arange(1,number_of_classes+1),images_per_test_class) 
-    index = np.arange(1,len(images_features_train)+1)
-    data = {'train_labels': train_labels, 'index': index}
-    train_label_df = pd.DataFrame(data)
+
 
     #verification step
     assert len(train_labels) == len(images_features_train)
@@ -224,23 +222,40 @@ def main():
         crr_d2.append(IrisPerformanceEvaluation.CRR(test_labels,d2))
         crr_d3.append(IrisPerformanceEvaluation.CRR(test_labels,d3))
 
-        #calculating similarity score for cosine distance
-        similarity_score = IrisMatching.nearestCentroid(images_features_dr_train,images_features_dr_test ,train_labels, metric = 'cosine', score =  True)
+        #Just focusing in the best dimension to get the false rate table
+        if i == 80:
+            #calculating similarity score for cosine distance
+            similarity_score = IrisMatching.nearestCentroid(images_features_dr_train,images_features_dr_test ,train_labels, metric = 'cosine', score =  True)
 
-        #calculating false match and non-match rate for each threshold
-        df1 = IrisPerformanceEvaluation.false_rate(similarity_score, thresholds[0], test_labels, d3)
-        df2 = IrisPerformanceEvaluation.false_rate(similarity_score, thresholds[1], test_labels, d3)
-        df3 = IrisPerformanceEvaluation.false_rate(similarity_score, thresholds[2], test_labels, d3)
-        false_rate_table = pd.concat([df1,df2,df3])
-        print(false_rate_table)
+            #calculating false match and non-match rate for each threshold
+            df1 = IrisPerformanceEvaluation.false_rate(similarity_score, thresholds[0], test_labels, d3)
+            df2 = IrisPerformanceEvaluation.false_rate(similarity_score, thresholds[1], test_labels, d3)
+            df3 = IrisPerformanceEvaluation.false_rate(similarity_score, thresholds[2], test_labels, d3)
+            df4 = IrisPerformanceEvaluation.false_rate(similarity_score, thresholds[3], test_labels, d3)
+            df5 = IrisPerformanceEvaluation.false_rate(similarity_score, thresholds[4], test_labels, d3)
+            false_rate_table = pd.concat([df1,df2,df3,df4,df5])
 
+      
+
+
+    
     #storing correct recognition rate results in crr_df dataframe
     crr_data = {'dims':dims,'crr_d1':crr_d1,'crr_d2':crr_d2,'crr_d3':crr_d3}
     crr_df = pd.DataFrame(crr_data)
+    print("CRR(correct recognition rate) for different dimensions \n")
     print(crr_df)
+
+    #printing the false rate table
+    print("\n FMR vs FNMR table \n")
+    print(false_rate_table)
 
     #Generates a plot for correct recognition rate
     IrisPerformanceEvaluation.make_plot(crr_df)
+
+    #Generates a plot for FMR vs FNMR
+    IrisPerformanceEvaluation.make_plot_fmr(false_rate_table)
+
+    print("\n PROCESS FINISHED...\n")
 
 if __name__ == "__main__":
   main()

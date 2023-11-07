@@ -9,10 +9,14 @@ def create_filter(dx,dy,crop_amount):
     f = 1/dy
 
 
-    # Grids for the 8x8 kernel to be able to apply the filter using convolution later
-    # x, y = np.mgrid[-7:8, -7:8]
-    # x, y = np.mgrid[0:crop_amount, 0:512]
-    x, y = np.mgrid[0:8, 0:8]
+    # Grids for the kernel to be able to apply the filter using convolution later, trying different grids
+    # the 1x1 kernel yielded the best results meaning that the filter should have been applied to each pixel
+    # individually 
+
+    # x, y = np.mgrid[0:8, 0:8]
+    # x, y = np.mgrid[0:4, 0:4] 
+    # x, y = np.mgrid[0:2, 0:2] 
+    x, y = np.mgrid[0:1,0:1] #best one so far
 
     #Filter provided in the paper
     filter = (1/(2*np.pi*dx*dy))*np.exp(-(x**2 / (2*dx**2) + y**2 / (2*dy**2))) * np.cos(2 * np.pi * f * (x**2 + y**2)**0.5)

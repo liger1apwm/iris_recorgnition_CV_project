@@ -103,29 +103,32 @@ def nearestCentroid(feature_vec_train, feature_vec_test, labels, metric, score):
     else:
         clf = NearestCentroid(metric)
         clf.fit(feature_vec_train, labels)
-        predicted_label = clf.predict(feature_vec_test)
+        # print("labels : ", labels)
+        # predicted_label = clf.predict(feature_vec_test)
 
-        #cnumber of unique labels i.e 108
-        unique_labels = np.unique(labels)
+        # get the centroids to be able to calculate the distances
+        centroids = clf.centroids_
+        # class_centroid = clf.classes_
 
-        centroids = {}
-        for label in unique_labels:
+        #vector to store the min dist for each test vector
+        min_cosine_test_dist = []
 
-            #identify data for each label/class (returns three True for each class)
-            mask = (labels == label)
-            class_data = feature_vec_train[mask]
-            #calculate mean of three feature vector vectors for each class 
-            centroid = np.mean(class_data, axis=0)
-            #assign mean to each label/class
-            centroids[label] = centroid
+        # loop tru all the testing vector that need to be calculated vs the train centroids
+        for test_vect in feature_vec_test:
+            
+            # array to save the distances for the currect test vector vs all train centroids
+            cosine_dist_vs_centers = []
 
-        centroid = []
-        #loop and order the centroid according to how they appear in predicted label
-        for i in predicted_label:
-            centroid.append(centroids[i])
-        
-        #calculate cosine similarity 
-        similarity = cosine_similarity(feature_vec_test,centroid)[0]
-        d = similarity
+            #iterate tru the centroids to calculate distances
+            for train_center in centroids:
+                
+                # Calculate the distances to each centrids and append it
+                cosine_dist_vs_centers.append(1 - cosine_similarity(test_vect.reshape(1, -1),train_center.reshape(1, -1)))
+
+            #Append the corresponding min distance as the classified class distance 
+            min_cosine_test_dist.append(min(cosine_dist_vs_centers)[0][0])
+
+        # array to be return with cosine similarities distances
+        d = min_cosine_test_dist
 
     return d

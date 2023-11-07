@@ -31,16 +31,27 @@ def false_rate(similarity_score, threshold, test_labels, d3):
     #False Non-Match: if score > threshold and test != match (we should accept but got rejected)
     false_df['FNMR'] = false_df.apply(lambda x: 1 if (x['similarity_score'] > threshold  and x['test_labels'] != x['cosine_match']) else 0, axis=1)
     false_df['threshold'] = threshold
-    false_df = false_df.groupby(["threshold"], as_index = False)["FMR", "FNMR"].mean()
+    false_df = false_df.groupby(["threshold"], as_index = False)[["FMR", "FNMR"]].mean()
 
     return false_df
 
 #function to create CRR plot for all dimensions using matplotlib
 def make_plot(df):
-    plt.plot( df["dims"], df["crr_d3"],marker='*', markersize=10)
+    plt.plot( df["dims"], df["crr_d3"],marker='.', markersize=10)
     plt.title('Recognition results using features of different dimensionality')
     plt.ylabel('Correct Recognition Rate')
     plt.xlabel('Number of dimensions')
+    plt.savefig('./CRR_plot.png')
+    plt.show()
+
+
+#function to create CRR plot for all dimensions using matplotlib
+def make_plot_fmr(df):
+    plt.plot( df["FMR"], df["FNMR"],marker='.', markersize=10)
+    plt.title('FMR VS FNMR for the best dimension (80)')
+    plt.ylabel('FNMR')
+    plt.xlabel('FMR')
+    plt.savefig('./FMR_plot.png')
     plt.show()
 
 
